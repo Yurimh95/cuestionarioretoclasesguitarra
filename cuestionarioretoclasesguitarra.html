@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Cuestionario · Reto guitarra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090d; --card:#12141c; --line:#272b37; --line2:#3a3f4e;
+  --text:#ece9e2; --muted:#9a978f; --gold:#d6b676; --gold-soft:rgba(214,182,118,.12);
+  --err:#e5826a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:90px}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:16px;line-height:1.5;
+  background-image:radial-gradient(ellipse at 50% -10%,#151826 0%,transparent 60%);
+  background-attachment:fixed;
+}
+[hidden]{display:none!important}
+.app{max-width:600px;margin:0 auto;padding:0 18px 130px}
+
+/* cabecera / progreso */
+.top{position:sticky;top:0;z-index:5;padding:14px 18px 10px;background:linear-gradient(var(--bg) 70%,transparent)}
+.top-in{max-width:600px;margin:0 auto}
+.top-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:8px}
+.top-row button{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.bar{height:3px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s ease}
+
+/* títulos */
+.step-head{margin:18px 0 6px}
+.step-head .emo{font-size:30px;line-height:1}
+.step-head h1{font-size:26px;font-weight:600;margin:8px 0 2px;letter-spacing:-.01em}
+.step-head p{margin:0;color:var(--muted);font-size:14px}
+.note{margin:14px 0 0;padding:12px 14px;border-left:2px solid var(--gold);background:var(--gold-soft);border-radius:0 10px 10px 0;font-size:14.5px;color:#d9d5cb}
+
+/* preguntas */
+.q{margin-top:30px;padding-left:12px;border-left:2px solid transparent;transition:border-color .2s}
+.q.err{border-left-color:var(--err)}
+.q.err .ql{color:var(--err)}
+.ql{font-size:17px;font-weight:500;margin:0 0 4px}
+.ql .opt{color:var(--muted);font-weight:300;font-size:14px}
+.hint{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.opts.inline{flex-direction:row;flex-wrap:wrap}
+.chip{
+  display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:11px 14px;text-align:left;
+  background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;
+  font:inherit;font-size:16px;line-height:1.35;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.chip:hover{border-color:var(--line2)}
+.mark{flex:none;width:20px;height:20px;border:1.5px solid #4b5060;border-radius:50%;position:relative;transition:all .15s}
+.multi .mark{border-radius:6px}
+.chip[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.chip[aria-pressed="true"] .mark{background:var(--gold);border-color:var(--gold)}
+.chip[aria-pressed="true"] .mark::after{
+  content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;
+  border:solid #1a1608;border-width:0 2px 2px 0;transform:rotate(45deg)
+}
+.inline .chip{width:auto;justify-content:center;padding:10px 18px;min-width:54px}
+.inline .mark{display:none}
+textarea,input.other{
+  width:100%;margin-top:10px;padding:12px 14px;background:var(--card);color:var(--text);
+  border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;resize:vertical;
+}
+textarea{min-height:120px}
+textarea:focus,input.other:focus{outline:none;border-color:var(--gold)}
+.counter{margin-top:6px;font-size:12.5px;color:var(--muted);text-align:right}
+.counter.ok{color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* navegación */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:14px 18px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
+.nav-in{max-width:600px;margin:0 auto;display:flex;gap:10px}
+.btn{
+  flex:1;min-height:52px;padding:12px 18px;border-radius:14px;border:1px solid var(--line2);
+  background:var(--card);color:var(--text);font:inherit;font-size:16px;font-weight:500;cursor:pointer;
+}
+.btn.primary{background:var(--gold);color:#1a1608;border-color:var(--gold);font-weight:600}
+.btn.ghost{flex:0 0 auto;min-width:96px}
+.btn:active{transform:translateY(1px)}
+
+/* intro */
+.intro{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;padding:30px 0}
+.intro .kicker{color:var(--gold);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
+.intro h1{font-size:40px;line-height:1.1;font-weight:600;margin:0 0 16px;letter-spacing:-.02em}
+.intro p{color:#cfcbc1;margin:0 0 12px}
+.intro .btn{flex:none;width:100%}
+.intro ul{padding:0;margin:8px 0 26px;list-style:none}
+.intro li{padding:8px 0 8px 26px;position:relative;color:#cfcbc1}
+.intro li::before{content:"▪";position:absolute;left:4px;color:var(--gold)}
+
+/* resumen */
+.sum-actions{display:grid;gap:10px;margin:16px 0 22px}
+.sum-actions .btn{flex:none;width:100%;text-align:center}
+.sum-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 16px}
+.sum-head{font-weight:600;font-size:15px;letter-spacing:.04em;color:var(--gold)}
+.sum-head small{display:block;font-weight:300;color:var(--muted);letter-spacing:0;margin-top:2px}
+.sum-card h3{font-size:15px;margin:20px 0 6px;padding-top:14px;border-top:1px solid var(--line)}
+.sum-row{padding:6px 0}
+.sum-row .k{font-size:12.5px;color:var(--muted)}
+.sum-row .v{font-size:15px;white-space:pre-wrap;word-break:break-word}
+details{margin-top:18px;color:var(--muted);font-size:14px}
+details textarea{min-height:200px;font-size:13px}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:10px 0}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;
+  background:#1c1f2a;border:1px solid var(--gold);color:var(--text);padding:10px 16px;border-radius:12px;
+  font-size:14.5px;max-width:90vw;text-align:center;pointer-events:none;transition:all .25s;z-index:10
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:700px){ .intro h1{font-size:48px} }
+</style>
+</head>
+<body>
+<header class="top" id="top" hidden><div class="top-in">
+  <div class="top-row"><span id="stepLabel"></span><button type="button" id="resetBtn">Reiniciar</button></div>
+  <div class="bar"><i id="barFill"></i></div>
+</div></header>
+<main class="app" id="app"></main>
+<nav class="nav" id="nav" hidden><div class="nav-in">
+  <button type="button" class="btn ghost" id="backBtn">← Atrás</button>
+  <button type="button" class="btn primary" id="nextBtn">Siguiente →</button>
+</div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   CONTENIDO DEL CUESTIONARIO
+   type: single | multi | text · other:true añade "Otro" con texto
+   showIf(A): pregunta condicional · required:false = opcional
+   ========================================================= */
+const hasGuitar = A => (A.tiene||'').startsWith('Sí');
+const triedBefore = A => (A.intento||'').startsWith('Sí');
+const isPresencial = A => (A.modalidad||'').startsWith('Presencial');
+const isOnline = A => !!A.modalidad && !isPresencial(A);
+const noDiscord = A => (A.discord||'').startsWith('No');
+
+const STEPS = [
+ {emoji:'📍', title:'Cómo serán las clases', sub:'Dónde y con qué',
+  note:'Yo no me desplazo para dar las clases. Se hacen en mi domicilio, en Bellvitge (L\'Hospitalet de Llobregat), o por videollamada en Discord.',
+  questions:[
+  {id:'modalidad', short:'Modalidad de las clases', label:'¿Cómo quieres hacer las clases?', type:'single', options:[
+    'Presencial: me desplazo yo hasta Bellvitge (L\'Hospitalet de Llobregat)','Online, por videollamada','Me valen las dos']},
+  {id:'dispositivo', short:'Dispositivo para la videollamada', label:'¿Desde qué dispositivo harías la videollamada?', type:'single', showIf:isOnline, options:[
+    'Ordenador (PC o portátil)','Móvil','Tablet','Varios, según el día']},
+  {id:'micro', short:'Calidad del micrófono', label:'¿Qué calidad de micrófono tienes?', type:'single', showIf:isOnline, options:[
+    'Buena (micrófono externo USB o de estudio)','Normal (auriculares con micro o el integrado)','Mala o con ruido','No tengo micrófono','No lo sé']},
+  {id:'camara', short:'Calidad de la cámara', label:'¿Qué calidad de cámara tienes?', type:'single', showIf:isOnline, options:[
+    'Buena (webcam HD o cámara externa)','Normal (la integrada del portátil o del móvil)','Mala o antigua','No tengo cámara','No lo sé']},
+  {id:'discord', short:'Experiencia con Discord', label:'¿Tienes experiencia usando Discord?', type:'single', showIf:isOnline, options:[
+    'Sí, lo uso a menudo','Sí, lo he usado alguna vez','No, nunca lo he usado']},
+  {id:'plataforma', short:'Otra plataforma de videollamada que usa', label:'Como no has usado Discord, ¿qué otra plataforma de videollamada has usado?', type:'multi', other:true,
+   showIf:A=>isOnline(A)&&noDiscord(A), exclusive:['Ninguna, nunca he hecho videollamadas'], options:[
+    'Skype','Zoom','Google Meet','Microsoft Teams','WhatsApp','FaceTime','Instagram o Messenger','Telegram','Ninguna, nunca he hecho videollamadas']}
+ ]},
+
+ {emoji:'🎸', title:'Tu guitarra', sub:'Punto de partida', questions:[
+  {id:'tiene', short:'Guitarra propia', label:'¿Tienes guitarra propia?', type:'single', options:[
+    'Sí','No, pero la conseguiré antes de empezar','No, y no sé si podré conseguirla']},
+  {id:'tipo', short:'Tipo de guitarra que tiene', label:'¿Qué tipo?', type:'multi', showIf:hasGuitar, options:[
+    'Clásica','Acústica','Eléctrica']},
+  {id:'aprender', short:'Guitarra que quiere aprender', label:'¿Cuál de ellas te gustaría aprender en estas clases?', type:'single', options:[
+    'Clásica','Acústica','Eléctrica','Me da igual, la que me recomiendes','Todavía no lo sé']},
+  {id:'sitio', short:'Puede tocar sin interrupciones', label:'¿Puedes tocar sin interrupciones en casa y en tu tiempo libre?', type:'single', options:[
+    'Sí, tengo un sitio y un tiempo tranquilos','Casi siempre','A veces me interrumpen','Rara vez puedo','No, tendría que buscar otro sitio']}
+ ]},
+
+ {emoji:'📈', title:'Tu experiencia', sub:'Lo que has hecho hasta ahora', questions:[
+  {id:'intento', short:'Ha intentado aprender antes', label:'¿Has intentado aprender antes?', type:'single', inline:true, options:[
+    'Sí','No']},
+  {id:'cuando', short:'Cuándo lo intentó', label:'¿Cuándo fue la última vez?', type:'single', showIf:triedBefore, options:[
+    'Sigo intentándolo ahora','Hace menos de 6 meses','Hace 6-12 meses','Hace 1-3 años','Hace 3-10 años','Hace más de 10 años']},
+  {id:'como', short:'Cómo lo intentó', label:'¿Cómo lo intentaste?', type:'multi', other:true, showIf:triedBefore, options:[
+    'Por mi cuenta (YouTube, tutoriales)','Con una app','Con profesor particular','En academia o escuela de música',
+    'Con un amigo o familiar','Con libros o cursos online']},
+  {id:'aguante', short:'Cuánto aguantó', label:'¿Cuánto tiempo aguantaste practicando?', type:'single', showIf:triedBefore, options:[
+    'Menos de 1 mes','1-3 meses','3-6 meses','6-12 meses','Más de 1 año']},
+  {id:'sem_antes', short:'Práctica semanal entonces', label:'Cuando mejor te iba, ¿cuánto practicabas a la semana?', type:'single', showIf:triedBefore, options:[
+    'Casi nada','Menos de 1 hora','1-2 horas','3-4 horas','5-7 horas','Más de 7 horas']},
+  {id:'porque_dejo', short:'Por qué lo dejó', label:'¿Por qué lo dejaste?', type:'multi', other:true, showIf:triedBefore,
+   exclusive:['No lo he dejado, sigo practicando'], options:[
+    'No lo he dejado, sigo practicando','Falta de tiempo','Falta de constancia o disciplina','Me frustré porque no avanzaba',
+    'Me aburrí','Perdí la motivación','Dolor o molestias en manos y dedos','Me costaba pagarlo',
+    'No me gustaba el profesor o el método','No tenía guitarra o un sitio donde tocar','Cambios en mi vida (estudios, trabajo…)']},
+  {id:'nivel', short:'Nivel actual', label:'¿Cuál es tu nivel real hoy?', type:'single', options:[
+    'Nunca he tocado una guitarra','Conozco alguna nota o acorde suelto','Hago algunos acordes, pero me cuesta cambiar entre ellos',
+    'Toco canciones sencillas con acordes','Hago cejillas, rasgueos y canciones completas','Hago punteos, escalas y algún solo sencillo',
+    'Toco solos y temas avanzados con soltura']}
+ ]},
+
+ {emoji:'⏱️', title:'Tiempo de práctica', sub:'Compromiso medible', questions:[
+  {id:'dias', short:'Días de práctica por semana', label:'¿Cuántos días a la semana puedes practicar?', type:'single', inline:true, options:[
+    '1','2','3','4','5','6','7']},
+  {id:'sesion', short:'Duración de cada sesión', label:'¿Cuánto tiempo practicarías cada día que toques?', type:'single', inline:true, options:[
+    '15 min','30 min','45 min','1 hora','1-2 horas','2-3 horas','Más de 3 horas']},
+  {id:'momento', short:'Momento del día para practicar', label:'¿En qué momento del día practicarías?', type:'multi', inline:true, options:[
+    'Mañana','Mediodía','Tarde','Noche','Depende del día']},
+  {id:'recortar', short:'Dispuesto a recortar tiempo', label:'¿Estás dispuesto/a a dejar de hacer o recortar algo de tu semana para encontrar tiempo, si se necesitara para practicar?', type:'single', options:[
+    'Sí, sin problema','Sí, pero solo algunas cosas','Prefiero no recortar nada','No lo sé']},
+  {id:'recortaria', short:'Qué recortaría', label:'¿Qué recortarías?', type:'multi', other:true,
+   showIf:A=>(A.recortar||'').startsWith('Sí'), options:[
+    'Tiempo de móvil y redes','Videojuegos','Series, películas o YouTube','Salidas con amigos','Horas de sueño',
+    'Otras aficiones','Horas extra de trabajo o estudio']}
+ ]},
+
+ {emoji:'🧱', title:'Constancia', sub:'Lo que puede hacerte fallar', questions:[
+  {id:'abandono', short:'Qué le haría abandonar', label:'¿Qué crees que te haría abandonar antes de los 3 meses?', type:'multi', other:true,
+   exclusive:['No lo sé'], options:[
+    'Falta de tiempo','Cansancio o estrés','Falta de motivación','Frustración si no avanzo rápido','Pereza o dejarlo para mañana',
+    'Que me aburra la rutina de ejercicios','Dolor o molestias en manos y dedos','Presión o vergüenza por estar en cámara',
+    'Cambios en mi trabajo, estudios o vida personal','Problemas personales o de salud','No lo sé']},
+  {id:'evitar', short:'Cómo evitaría abandonar', label:'¿Qué harías para evitarlo?', type:'multi', other:true, options:[
+    'Reservar días y horas fijos para practicar','Ponerme alarmas o recordatorios','Empezar con sesiones cortas e ir subiendo',
+    'Ponerme metas pequeñas cada semana','Avisarte y pedirte ayuda si me atasco','Practicar con un amigo o compañero',
+    'Recordar que el reto es público','Cambiar de ejercicio cuando me aburra']}
+ ]},
+
+ {emoji:'📅', title:'Disponibilidad', sub:'Para cuadrar las clases', questions:[
+  {id:'dias_disp', short:'Días disponibles', label:'¿Qué días podrías tener clase?', type:'multi', inline:true, options:[
+    'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']},
+  {id:'franjas', short:'Franjas horarias', label:'¿En qué franjas horarias?', type:'multi', options:[
+    'Mañana (9-13 h)','Mediodía (13-16 h)','Tarde (16-20 h)','Noche (20-23 h)']}
+ ]},
+
+ {emoji:'🎯', title:'Tu objetivo', sub:'Dónde quieres llegar', questions:[
+  {id:'fin', short:'Qué busca con la guitarra', label:'¿Qué quieres conseguir con la guitarra?', type:'multi', other:true, options:[
+    'Tocar para mí y disfrutar','Tocar con amigos','Cantar y acompañarme','Tocar en directo','Grabar y compartir vídeos',
+    'Componer mis propias canciones','Tocar solos y técnica avanzada','Dedicarme a ello profesionalmente','Superar un reto personal']},
+  {id:'tipo_meta', short:'Tipo de meta a 3 meses', label:'¿Qué te gustaría tocar al final de los 3 meses?', type:'single', options:[
+    'Una canción con acordes y rasgueo','Una canción con arpegios o fingerstyle','Un riff conocido','Un solo de guitarra',
+    'Una técnica concreta (cejilla, legato, bends…)','Improvisar con la pentatónica','Algo compuesto por mí','Todavía no lo sé']},
+  {id:'meta_texto', short:'Meta concreta y motivo', label:'¿Cuál en concreto (canción, solo o técnica) y por qué esa?', type:'text', minLen:15, rows:4,
+   placeholder:'Escribe la canción, solo o técnica y el motivo…'}
+ ]},
+
+ {emoji:'🤝', title:'Expectativas', sub:'Qué esperas de cada parte', questions:[
+  {id:'profe', short:'Espera del profesor', label:'¿Qué esperas de mí como profesor?', type:'multi', other:true, options:[
+    'Que me exijas y me pongas el listón alto','Que me guíes paso a paso','Que me motives cuando me estanque',
+    'Que me corrijas sin filtros','Que adaptes las clases a mis gustos','Que me pongas ejercicios claros cada semana',
+    'Que me expliques la teoría de forma sencilla','Que las clases sean dinámicas y divertidas','Que seas flexible con los horarios']},
+  {id:'alumno', short:'Espera de sí mismo como alumno', label:'¿Qué esperas de ti como alumno?', type:'multi', other:true, options:[
+    'Practicar cada semana lo acordado','Ser puntual y avisar si no puedo asistir','Seguir tus indicaciones y hacer los ejercicios',
+    'Aceptar las correcciones y las críticas','Ser constante aunque no tenga ganas','Ser sincero/a con mi progreso y mis dificultades',
+    'Dar lo mejor de mí delante de la cámara','No rendirme si me estanco']}
+ ]},
+
+ {emoji:'🎥', title:'Exposición pública', sub:'El reto se verá en redes',
+  note:'Solo pretendo grabar en vídeo momentos concretos, haciendo algún ejercicio concreto, pero el reto será público y se verá cuando falles, te estanques o te equivoques.',
+  questions:[
+  {id:'foto', short:'Acepta ser fotografiado y grabado', label:'¿Estás de acuerdo con ser fotografiado/a y grabado/a?', type:'single', options:[
+    'Sí, sin problema','Sí, pero con algún límite','No']},
+  {id:'limites', short:'Límites al grabar', label:'¿Qué límites pondrías?', type:'multi', other:true,
+   showIf:A=>A.foto==='Sí, pero con algún límite', options:[
+    'Que se vea mi cara','Que se oiga mi voz','Que se vea mi casa','Que aparezca mi nombre completo','Que se publiquen mis fallos']},
+  {id:'comodidad', short:'Cómo le sientan sus fallos en público', label:'¿Cuánto te incomoda que se vean tus fallos o tu estancamiento?', type:'single',
+   showIf:A=>A.foto!=='No', options:[
+    'Nada, forma parte de aprender','Un poco, pero lo asumo','Bastante, pero aun así quiero hacerlo','Mucho']}
+ ]},
+
+ {emoji:'⚖️', title:'Win-win', sub:'Última pantalla', questions:[
+  {id:'porque', short:'Por qué debería ser él/ella', label:'¿Por qué deberías ser tú y no cualquiera de los otros candidatos? Convénceme en 5 líneas.', type:'text', minLen:80, rows:7,
+   placeholder:'Escribe aquí tu respuesta…'},
+  {id:'condicion', short:'Condiciones que no aceptaría', label:'¿Hay alguna condición que no aceptarías?', type:'single', options:[
+    'No, acepto todas las condiciones','Sí, hay alguna que no aceptaría']},
+  {id:'cual', short:'Cuáles no aceptaría', label:'¿Cuál?', type:'multi', other:true,
+   showIf:A=>(A.condicion||'').startsWith('Sí'), options:[
+    'Grabaciones y fotos públicas','Dejar mis objetivos escritos públicamente','Documentar el proceso semana a semana',
+    'Practicar cada semana y seguir tus indicaciones','Comprometerme durante 3 meses','Que se publique el resultado aunque no lo consiga']}
+ ]}
+];
+
+/* =========================================================
+   LÓGICA
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const QM = {}; STEPS.forEach(s => s.questions.forEach(q => QM[q.id] = q));
+const KEY = 'retoGuitarraCuestionario_v1';
+let cur = -1;               // -1 intro · 0..N-1 pasos · N resumen
+let A = {}, O = {};         // respuestas · textos de "Otro"
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const visible = q => !q.showIf || !!q.showIf(A);
+const optsOf = q => q.options.concat(q.other ? ['Otro'] : []);
+const isSel = (q,o) => q.type==='multi' ? (A[q.id]||[]).includes(o) : A[q.id]===o;
+
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({A,O,cur})); }catch(e){} }
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY)||'null');
+    if(d){ A=d.A||{}; O=d.O||{}; cur = (typeof d.cur==='number' && d.cur<=STEPS.length) ? d.cur : -1; }
+  }catch(e){}
+}
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ---------- render ---------- */
+function render(){
+  save();
+  const app=$('#app'), top=$('#top'), nav=$('#nav');
+  if(cur<0){ top.hidden=true; nav.hidden=true; app.innerHTML=introHTML(); }
+  else if(cur>=STEPS.length){ top.hidden=false; nav.hidden=true; app.innerHTML=summaryHTML(); setProgress(STEPS.length, 'Resumen'); }
+  else { top.hidden=false; nav.hidden=false; app.innerHTML=stepHTML(STEPS[cur]); updateVis();
+         setProgress(cur, `Paso ${cur+1} de ${STEPS.length}`);
+         $('#backBtn').textContent = cur===0 ? '← Inicio' : '← Atrás';
+         $('#nextBtn').textContent = cur===STEPS.length-1 ? 'Ver resumen →' : 'Siguiente →'; }
+  window.scrollTo(0,0);
+}
+function setProgress(done,label){
+  $('#stepLabel').textContent=label;
+  $('#barFill').style.width = (cur>=STEPS.length ? 100 : Math.round((cur+1)/(STEPS.length+1)*100)) + '%';
+}
+function introHTML(){
+  return `<section class="intro">
+    <p class="kicker">Reto guitarra</p>
+    <h1>Cuestionario para candidatos</h1>
+    <p>Antes de elegir quién hace el reto, necesito conocerte mejor. Responde con sinceridad.</p>
+    <ul>
+      <li>Dura unos 5 minutos.</li>
+      <li>Casi todo se responde con un clic; solo hay un par de preguntas para escribir.</li>
+      <li>Nada se envía solo: al final te sale un resumen y tú me lo mandas por mensaje privado.</li>
+    </ul>
+    <button type="button" class="btn primary" id="startBtn">Empezar →</button>
+  </section>`;
+}
+function stepHTML(s){
+  return `<div class="step-head"><div class="emo">${s.emoji}</div><h1>${esc(s.title)}</h1><p>${esc(s.sub||'')}</p>
+    ${s.note?`<p class="note">${esc(s.note)}</p>`:''}</div>` + s.questions.map(qHTML).join('');
+}
+function qHTML(q){
+  let body='';
+  if(q.type==='text'){
+    body = `<textarea data-text="${q.id}" rows="${q.rows||4}" placeholder="${esc(q.placeholder||'')}" maxlength="1500">${esc(A[q.id]||'')}</textarea>
+            <div class="counter" data-counter="${q.id}"></div>`;
+  } else {
+    const opts=optsOf(q);
+    body = `<div class="opts ${q.inline?'inline':''} ${q.type}" role="${q.type==='single'?'radiogroup':'group'}">` +
+      opts.map((o,i)=>`<button type="button" class="chip" data-i="${i}" aria-pressed="${isSel(q,o)}"><span class="mark"></span><span>${esc(o==='Otro'&&q.other?'Otro (escríbelo)':o)}</span></button>`).join('') +
+      `</div>` + (q.other?`<input type="text" class="other" data-other="${q.id}" placeholder="Escribe aquí…" maxlength="140" value="${esc(O[q.id]||'')}" ${isSel(q,'Otro')?'':'hidden'}>`:'');
+  }
+  const hint = q.type==='multi' ? '<p class="hint">Marca todas las que quieras</p>' : '';
+  return `<section class="q" data-q="${q.id}"><h2 class="ql">${esc(q.label)}${q.required===false?' <span class="opt">(opcional)</span>':''}</h2>${hint}${body}</section>`;
+}
+function updateVis(){
+  if(cur<0||cur>=STEPS.length) return;
+  STEPS[cur].questions.forEach(q=>{
+    const el=document.querySelector(`.q[data-q="${q.id}"]`); if(el) el.hidden=!visible(q);
+    if(q.type==='text') updateCounter(q);
+  });
+}
+function updateCounter(q){
+  const c=document.querySelector(`[data-counter="${q.id}"]`); if(!c) return;
+  const n=(A[q.id]||'').trim().length, min=q.minLen||0;
+  c.textContent = n>=min ? `${n} caracteres` : `Mínimo ${min} caracteres (llevas ${n})`;
+  c.classList.toggle('ok', n>=min);
+}
+
+/* ---------- validación ---------- */
+function validate(){
+  let first=null;
+  STEPS[cur].questions.forEach(q=>{
+    if(!visible(q)||q.required===false) return;
+    const v=A[q.id]; let ok;
+    if(q.type==='text') ok=(v||'').trim().length>=(q.minLen||1);
+    else if(q.type==='multi') ok=Array.isArray(v)&&v.length>0;
+    else ok=!!v;
+    if(ok && q.other && isSel(q,'Otro')) ok=(O[q.id]||'').trim().length>0;
+    const el=document.querySelector(`.q[data-q="${q.id}"]`);
+    el.classList.toggle('err',!ok);
+    if(!ok&&!first) first=el;
+  });
+  if(first){ first.scrollIntoView({behavior:'smooth',block:'center'}); toast('Te falta responder lo marcado en rojo'); return false; }
+  return true;
+}
+
+/* ---------- resumen / exportación ---------- */
+function fmt(q){
+  const v=A[q.id];
+  if(v==null||v===''||(Array.isArray(v)&&!v.length)) return '';
+  const f=x=> x==='Otro'&&q.other ? 'Otro: '+(O[q.id]||'').trim() : x;
+  return q.type==='multi' ? v.map(f).join(', ') : q.type==='text' ? v.trim() : f(v);
+}
+function collect(){
+  return STEPS.map(s=>({s, items:s.questions.filter(visible).map(q=>[q,fmt(q)]).filter(x=>x[1])})).filter(g=>g.items.length);
+}
+function stamp(){ return new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function toText(){
+  let t=`RETO GUITARRA · Cuestionario de candidato\n${stamp()}\n`;
+  collect().forEach(g=>{
+    t+=`\n${g.s.emoji} ${g.s.title.toUpperCase()}\n`;
+    g.items.forEach(([q,v])=>{
+      t += q.type==='text' ? `• ${q.short}:\n   "${v.replace(/\n/g,'\n   ')}"\n` : `• ${q.short}: ${v}\n`;
+    });
+  });
+  return t.trim();
+}
+function summaryHTML(){
+  const share = !!navigator.share;
+  const cards = collect().map(g=>`<h3>${g.s.emoji} ${esc(g.s.title)}</h3>` +
+     g.items.map(([q,v])=>`<div class="sum-row"><div class="k">${esc(q.short)}</div><div class="v">${esc(v)}</div></div>`).join('')).join('');
+  return `<div class="step-head"><div class="emo">✅</div><h1>Resumen</h1>
+      <p>Revisa tus respuestas y mándamelas por mensaje privado de la forma que te sea más fácil.</p></div>
+    <div class="sum-actions">
+      <button type="button" class="btn primary" data-act="copy">📋 Copiar respuestas</button>
+      ${share?'<button type="button" class="btn" data-act="share">📤 Compartir…</button>':''}
+      <button type="button" class="btn" data-act="txt">⬇️ Descargar archivo .txt</button>
+    </div>
+    <p class="hint">Pulsa «Copiar» y pégalo en nuestro chat. Si prefieres, haz una captura de pantalla de este resumen.</p>
+    <div class="sum-card"><div class="sum-head">RETO GUITARRA · Cuestionario<small>${esc(stamp())}</small></div>${cards}</div>
+    <details id="plain"><summary>Si «Copiar» no funciona, copia el texto desde aquí</summary>
+      <textarea readonly id="plainTxt">${esc(toText())}</textarea></details>
+    <button type="button" class="linkbtn" data-act="back">← Volver y corregir algo</button>`;
+}
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); return true; }catch(e){}
+  try{
+    const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0,t.length);
+    const ok=document.execCommand('copy'); ta.remove(); return ok;
+  }catch(e){ return false; }
+}
+async function doAction(act){
+  const text=toText();
+  if(act==='copy'){
+    if(await copyText(text)) toast('Copiado ✔ Ahora pégalo en el chat');
+    else { const d=$('#plain'); d.open=true; $('#plainTxt').focus(); $('#plainTxt').select(); toast('Copia el texto manualmente desde la caja'); }
+  }
+  else if(act==='share'){
+    try{ await navigator.share({title:'Cuestionario reto guitarra', text}); }
+    catch(e){ if(e&&e.name!=='AbortError') toast('No se pudo compartir; usa «Copiar»'); }
+  }
+  else if(act==='txt'){
+    const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download='cuestionario-reto-guitarra.txt'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500); toast('Archivo descargado ✔ Mándamelo por el chat');
+  }
+  else if(act==='back'){ cur=STEPS.length-1; render(); }
+}
+
+/* ---------- eventos ---------- */
+$('#app').addEventListener('click', e=>{
+  if(e.target.id==='startBtn'){ cur=0; render(); return; }
+  const act=e.target.closest('[data-act]'); if(act){ doAction(act.dataset.act); return; }
+  const b=e.target.closest('.chip'); if(!b) return;
+  const sec=b.closest('.q'), q=QM[sec.dataset.q], o=optsOf(q)[+b.dataset.i], wasOther=isSel(q,'Otro');
+  if(q.type==='single') A[q.id]=o;
+  else{
+    let arr=A[q.id]||[]; const ex=q.exclusive||[];
+    if(arr.includes(o)) arr=arr.filter(x=>x!==o);
+    else arr = ex.includes(o) ? [o] : arr.filter(x=>!ex.includes(x)).concat(o);
+    A[q.id]=arr;
+  }
+  sec.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', isSel(q,optsOf(q)[+c.dataset.i])));
+  const oi=sec.querySelector('.other');
+  if(oi){ const show=isSel(q,'Otro'); oi.hidden=!show; if(show&&!wasOther) oi.focus({preventScroll:true}); }
+  sec.classList.remove('err'); updateVis(); save();
+});
+$('#app').addEventListener('input', e=>{
+  const t=e.target;
+  if(t.dataset.text){ A[t.dataset.text]=t.value; updateCounter(QM[t.dataset.text]); t.closest('.q').classList.remove('err'); save(); }
+  else if(t.dataset.other){ O[t.dataset.other]=t.value; t.closest('.q').classList.remove('err'); save(); }
+});
+$('#nextBtn').addEventListener('click', ()=>{ if(!validate()) return; cur++; render(); });
+$('#backBtn').addEventListener('click', ()=>{ cur = cur===0 ? -1 : cur-1; render(); });
+$('#resetBtn').addEventListener('click', ()=>{
+  if(confirm('¿Borrar tus respuestas y empezar de nuevo?')){ A={}; O={}; cur=-1; render(); }
+});
+
+load(); render();
+</script>
+</body>
+</html>
